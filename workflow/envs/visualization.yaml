@@ -1,0 +1,12 @@
+name: visualization
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - deeptools=3.5.2
+  - matplotlib=3.7.1
+  - seaborn=0.12.2
+  - pandas=2.0.3
+  - numpy=1.24.3
+  - pysam=0.21.0

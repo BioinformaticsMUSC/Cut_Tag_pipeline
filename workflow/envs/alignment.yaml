@@ -1,0 +1,10 @@
+name: alignment
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bowtie2=2.5.1
+  - samtools=1.17
+  - picard=3.0.0
+  - bc

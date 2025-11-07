@@ -1,0 +1,54 @@
+"""
+CUT&Tag Analysis Pipeline
+Author: Snakemake Workflow
+Description: A comprehensive pipeline for CUT&Tag data processing including:
+- Quality control with FastQC
+- Read trimming with Trimmomatic
+- Alignment with Bowtie2
+- Peak calling with MACS2 and SEACR
+- Quality metrics and visualization
+"""
+
+import pandas as pd
+from pathlib import Path
+
+# Load configuration
+configfile: "config/config.yaml"
+
+# Load sample information
+samples_df = pd.read_csv(config["samples"], sep="\t")
+SAMPLES = samples_df["sample_id"].tolist()
+
+# Define wildcards
+wildcard_constraints:
+    sample="[A-Za-z0-9_-]+"
+
+# Target rule
+rule all:
+    input:
+        # FastQC reports
+        expand("results/fastqc/{sample}_R{read}_fastqc.html", sample=SAMPLES, read=[1,2]),
+        # Trimmed reads
+        expand("results/trimmed/{sample}_R{read}_trimmed.fastq.gz", sample=SAMPLES, read=[1,2]),
+        # Alignment
+        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
+        expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
+        # Filtered BAMs
+        expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
+        expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
+        # Peak calling
+        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=SAMPLES),
+        expand("results/peaks/seacr/{sample}.stringent.bed", sample=SAMPLES),
+        # QC reports
+        "results/qc/multiqc_report.html",
+        "results/qc/alignment_stats.txt",
+        # Visualization
+        expand("results/bigwig/{sample}.bw", sample=SAMPLES),
+
+# Include rule modules
+include: "rules/qc.smk"
+include: "rules/trimming.smk"
+include: "rules/alignment.smk"
+include: "rules/filtering.smk"
+include: "rules/peaks.smk"
+include: "rules/visualization.smk"

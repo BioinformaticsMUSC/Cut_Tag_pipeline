@@ -1,0 +1,250 @@
+# CUT&Tag Pipeline .gitignore
+
+# ===========================================
+# Data and Results (typically large files)
+# ===========================================
+
+# Raw sequencing data
+data/*.fastq
+data/*.fastq.gz
+data/*.fq
+data/*.fq.gz
+
+# Results directories (keep structure, ignore contents)
+results/fastqc/
+results/fastqc_trimmed/
+results/trimmed/
+results/aligned/
+results/filtered/
+results/peaks/
+results/bigwig/
+results/bedgraph/
+results/qc/
+results/logs/
+
+# Keep empty results directories
+!results/.gitkeep
+!results/*/.gitkeep
+
+# Reference genome files (usually large)
+resources/genome/*.fa
+resources/genome/*.fasta
+resources/genome/*.gtf
+resources/genome/*.gff
+resources/genome/*.gff3
+resources/genome/*.bed
+resources/genome/*.bt2
+resources/genome/*.fai
+resources/genome/*.dict
+
+# Keep adapter files and small reference files
+!resources/adapters/
+!resources/genome/README.md
+
+# ===========================================
+# Snakemake specific
+# ===========================================
+
+# Snakemake metadata
+.snakemake/
+.snakemake
+*.snakemake
+
+# Conda environments (auto-generated)
+.conda/
+.mamba/
+
+# Benchmark files
+benchmarks/
+
+# Temporary files
+temp/
+tmp/
+.tmp/
+
+# ===========================================
+# Cluster and job management
+# ===========================================
+
+# SLURM output files
+*.out
+*.err
+slurm-*.out
+
+# LSF output files
+*.bsub
+
+# PBS/Torque output files
+*.o[0-9]*
+*.e[0-9]*
+
+# SGE output files
+*.po[0-9]*
+*.pe[0-9]*
+
+# ===========================================
+# Operating System
+# ===========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ===========================================
+# Development and Editor files
+# ===========================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# R
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+*-Ex.R
+/*.tar.gz
+/*.Rcheck/
+.Rproj.user/
+vignettes/*.html
+vignettes/*.pdf
+.httr-oauth
+*_cache/
+/cache/
+*.utf8.md
+*.knit.md
+.Renviron
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===========================================
+# Backup and temporary files
+# ===========================================
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.rej
+
+# Log files
+*.log
+*.out
+*.err
+
+# Archive files (often large)
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+
+# ===========================================
+# Configuration overrides
+# ===========================================
+
+# Local configuration overrides
+config/local.yaml
+config/personal.yaml
+profiles/local/
+
+# Secrets and credentials
+*.key
+*.pem
+*.p12
+.env
+.env.local
+secrets.yaml
+
+# ===========================================
+# Test and development data
+# ===========================================
+
+# Test output
+test_results/
+test_output/
+*_test/
+
+# Development databases
+*.sqlite
+*.db

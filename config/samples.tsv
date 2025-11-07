@@ -1,0 +1,7 @@
+sample_id	condition	replicate	control	antibody
+H3K4me3_rep1	H3K4me3	1	IgG_rep1	H3K4me3
+H3K4me3_rep2	H3K4me3	2	IgG_rep2	H3K4me3
+H3K27ac_rep1	H3K27ac	1	IgG_rep1	H3K27ac
+H3K27ac_rep2	H3K27ac	2	IgG_rep2	H3K27ac
+IgG_rep1	IgG	1	NA	IgG
+IgG_rep2	IgG	2	NA	IgG

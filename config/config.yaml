@@ -1,0 +1,43 @@
+# CUT&Tag Pipeline Configuration
+
+# Sample information file
+samples: "config/samples.tsv"
+
+# Reference genome configuration
+genome:
+  fasta: "resources/genome/genome.fa"
+  gtf: "resources/genome/genome.gtf" 
+  effective_size: 2700000000  # mm10: 2652783500, hg38: 2700000000
+  tss_bed: "resources/genome/tss.bed"
+
+# Trimming parameters
+trimmomatic:
+  adapters: "resources/adapters/TruSeq3-PE-2.fa"
+  extra_params: "LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36"
+
+cutadapt:
+  adapters: "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+  extra_params: "--minimum-length 36 --quality-cutoff 20"
+
+# Alignment parameters  
+bowtie2:
+  extra_params: "--very-sensitive --no-mixed --no-discordant --phred33 -I 10 -X 700"
+
+# Filtering parameters
+filtering:
+  min_quality: 30
+  sam_flags: "-F 1804"  # Remove unmapped, mate unmapped, not primary alignment, reads failing platform
+  max_fragment_size: 120  # For nucleosome-free reads
+
+# Peak calling parameters
+macs2:
+  extra_params: "--keep-dup all --broad-cutoff 0.1 --min-length 500 --max-gap 200"
+  
+seacr:
+  threshold: 0.01  # FDR threshold for peak calling
+
+# Quality control thresholds
+qc:
+  min_mapping_rate: 70  # Minimum percentage of reads that should map
+  max_duplicate_rate: 30  # Maximum percentage of duplicate reads
+  min_library_complexity: 0.8  # Minimum library complexity score
