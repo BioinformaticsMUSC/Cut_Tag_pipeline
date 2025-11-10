@@ -2,11 +2,29 @@
 Peak Calling Rules
 """
 
+def get_control_bam(wildcards):
+    """Get control BAM file for a sample if it exists"""
+    import pandas as pd
+    samples_df = pd.read_csv(config["samples"], sep="\t")
+    
+    # Find the row for this sample
+    sample_row = samples_df[samples_df['sample_id'] == wildcards.sample]
+    if len(sample_row) == 0:
+        return []
+    
+    control_id = sample_row['control'].iloc[0]
+    
+    # Check if control is not NaN/null and exists
+    if pd.isna(control_id) or control_id == 'NA':
+        return []
+    else:
+        return f"results/filtered/{control_id}.filtered.bam"
+
 rule macs2_callpeak:
     """Call peaks using MACS2"""
     input:
         treatment="results/filtered/{sample}.filtered.bam",
-        control=lambda wildcards: f"results/filtered/{samples_df[samples_df['sample_id'] == wildcards.sample]['control'].iloc[0]}.filtered.bam" if not samples_df[samples_df['sample_id'] == wildcards.sample]['control'].isna().iloc[0] else []
+        control=get_control_bam
     output:
         narrowpeak="results/peaks/macs2/{sample}_peaks.narrowPeak",
         summits="results/peaks/macs2/{sample}_summits.bed",
@@ -22,21 +40,37 @@ rule macs2_callpeak:
     conda:
         "../envs/peaks.yaml"
     shell:
-        "macs2 callpeak "
-        "-t {input.treatment} "
-        + ("-c {input.control} " if len(input.control) > 0 else "") +
-        "-f BAMPE "
-        "-g {params.genome_size} "
-        "-n {params.name} "
-        "--outdir {params.outdir} "
-        "--broad "
-        "{params.extra} > {log} 2>&1"
+        """
+        if [ -n "{input.control}" ]; then
+            macs2 callpeak -t {input.treatment} -c {input.control} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} --broad {params.extra} > {log} 2>&1
+        else
+            macs2 callpeak -t {input.treatment} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} --broad {params.extra} > {log} 2>&1
+        fi
+        """
+
+def get_control_bedgraph(wildcards):
+    """Get control bedgraph file for a sample if it exists"""
+    import pandas as pd
+    samples_df = pd.read_csv(config["samples"], sep="\t")
+    
+    # Find the row for this sample
+    sample_row = samples_df[samples_df['sample_id'] == wildcards.sample]
+    if len(sample_row) == 0:
+        return []
+    
+    control_id = sample_row['control'].iloc[0]
+    
+    # Check if control is not NaN/null and exists
+    if pd.isna(control_id) or control_id == 'NA':
+        return []
+    else:
+        return f"results/bedgraph/{control_id}.bedgraph"
 
 rule seacr_callpeak:
     """Call peaks using SEACR"""
     input:
         bedgraph="results/bedgraph/{sample}.bedgraph",
-        control=lambda wildcards: f"results/bedgraph/{samples_df[samples_df['sample_id'] == wildcards.sample]['control'].iloc[0]}.bedgraph" if not samples_df[samples_df['sample_id'] == wildcards.sample]['control'].isna().iloc[0] else []
+        control=get_control_bedgraph
     output:
         stringent="results/peaks/seacr/{sample}.stringent.bed",
         relaxed="results/peaks/seacr/{sample}.relaxed.bed"

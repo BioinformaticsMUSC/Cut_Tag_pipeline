@@ -55,7 +55,15 @@ def run_seacr(treatment_bedgraph, output_prefix, control_bedgraph=None, threshol
 if __name__ == "__main__":
     treatment = snakemake.input.bedgraph
     output_prefix = snakemake.params.prefix
-    control = snakemake.input.control[0] if len(snakemake.input.control) > 0 else None
+    
+    # Handle control input - could be empty list or string
+    control = None
+    if hasattr(snakemake.input, 'control') and snakemake.input.control:
+        if isinstance(snakemake.input.control, list):
+            control = snakemake.input.control[0] if len(snakemake.input.control) > 0 else None
+        else:
+            control = snakemake.input.control
+    
     threshold = snakemake.params.threshold
     
     run_seacr(treatment, output_prefix, control, threshold)
