@@ -5,8 +5,8 @@ Read Trimming Rules
 rule trimmomatic:
     """Trim adapters and low-quality bases from paired-end reads"""
     input:
-        r1="data/{sample}_R1.fastq.gz",
-        r2="data/{sample}_R2.fastq.gz"
+        r1=lambda wildcards: f"data/{wildcards.sample}_R1{config['input']['fastq_suffix']}",
+        r2=lambda wildcards: f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}"
     output:
         r1="results/trimmed/{sample}_R1_trimmed.fastq.gz",
         r2="results/trimmed/{sample}_R2_trimmed.fastq.gz",
@@ -31,8 +31,8 @@ rule trimmomatic:
 rule cutadapt:
     """Alternative adapter trimming with cutadapt"""
     input:
-        r1="data/{sample}_R1.fastq.gz",
-        r2="data/{sample}_R2.fastq.gz"
+        r1=lambda wildcards: f"data/{wildcards.sample}_R1{config['input']['fastq_suffix']}",
+        r2=lambda wildcards: f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}"
     output:
         r1="results/cutadapt/{sample}_R1_trimmed.fastq.gz",
         r2="results/cutadapt/{sample}_R2_trimmed.fastq.gz"

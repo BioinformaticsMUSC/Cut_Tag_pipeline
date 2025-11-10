@@ -62,11 +62,17 @@ conda install -c conda-forge -c bioconda snakemake
 
 ### 1. Prepare Input Data
 
-Place your paired-end FASTQ files in the `data/` directory with the naming convention:
+Place your paired-end FASTQ files in the `data/` directory. The pipeline supports flexible naming conventions:
+
+**Default pattern (with `_001` suffix):**
 ```
-{sample_id}_R1.fastq.gz
-{sample_id}_R2.fastq.gz
+{sample_id}_R1_001.fastq.gz
+{sample_id}_R2_001.fastq.gz
 ```
+
+**Alternative patterns:** Modify `fastq_suffix` in `config/config.yaml`:
+- For files without `_001`: change to `.fastq.gz`
+- For other patterns: adjust accordingly
 
 ### 2. Configure Samples
 

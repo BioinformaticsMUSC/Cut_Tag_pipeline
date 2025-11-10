@@ -3,6 +3,14 @@
 # Sample information file
 samples: "config/samples.tsv"
 
+# Input file configuration
+input:
+  # FASTQ file suffix pattern - adjust based on your sequencing facility
+  # Common patterns: "_001.fastq.gz", ".fastq.gz", "_R{read}_001.fastq.gz"
+  fastq_suffix: "_001.fastq.gz"
+  # Alternative: use full pattern
+  # fastq_pattern: "{sample}_R{read}_001.fastq.gz"
+
 # Reference genome configuration
 genome:
   fasta: "resources/genome/genome.fa"

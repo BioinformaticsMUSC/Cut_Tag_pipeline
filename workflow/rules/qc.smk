@@ -5,7 +5,7 @@ Quality Control Rules
 rule fastqc:
     """Run FastQC on raw reads"""
     input:
-        "data/{sample}_R{read}.fastq.gz"
+        lambda wildcards: f"data/{wildcards.sample}_R{wildcards.read}{config['input']['fastq_suffix']}"
     output:
         html="results/fastqc/{sample}_R{read}_fastqc.html",
         zip="results/fastqc/{sample}_R{read}_fastqc.zip"
