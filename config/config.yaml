@@ -11,6 +11,11 @@ input:
   # Alternative: use full pattern
   # fastq_pattern: "{sample}_R{read}_001.fastq.gz"
 
+# Processing options
+processing:
+  # Skip trimming step (CUT&Tag data is often high quality and doesn't need trimming)
+  skip_trimming: false  # Set to true to align raw reads directly
+
 # Reference genome configuration
 genome:
   fasta: "resources/genome/genome.fa"

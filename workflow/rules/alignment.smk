@@ -18,6 +18,26 @@ rule bowtie2_build:
     shell:
         "bowtie2-build --threads {threads} {input.fasta} {params.prefix}"
 
+rule bowtie2_align_raw:
+    """Align raw reads directly to reference genome (skip trimming)"""
+    input:
+        r1=lambda wildcards: f"data/{wildcards.sample}_R1{config['input']['fastq_suffix']}",
+        r2=lambda wildcards: f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}",
+        index=expand("resources/genome/genome_index.{ext}.bt2", ext=["1","2","3","4"])
+    output:
+        bam=temp("results/aligned/{sample}.bam"),
+        log="results/logs/bowtie2/{sample}.log"
+    params:
+        index="resources/genome/genome_index",
+        extra=config["bowtie2"]["extra_params"]
+    threads: 8
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "bowtie2 -x {params.index} -1 {input.r1} -2 {input.r2} "
+        "-p {threads} {params.extra} 2> {output.log} | "
+        "samtools view -Sb - > {output.bam}"
+
 rule bowtie2_align:
     """Align trimmed reads to reference genome"""
     input:

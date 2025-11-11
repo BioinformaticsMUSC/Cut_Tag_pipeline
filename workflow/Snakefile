@@ -26,6 +26,24 @@ wildcard_constraints:
 
 
 # Alternative target rules
+rule all_no_trimming:
+    """Run pipeline without trimming (direct from raw reads)"""
+    input:
+        # FastQC reports
+        expand("results/fastqc/{sample}_R{read}_fastqc.html", sample=SAMPLES, read=[1,2]),
+        # Alignment (directly from raw reads)
+        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
+        expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
+        # Filtered BAMs
+        expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
+        expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
+        # Peak calling
+        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=SAMPLES),
+        expand("results/peaks/seacr/{sample}.stringent.bed", sample=SAMPLES),
+        # QC reports
+        "results/qc/multiqc_report.html",
+        "results/qc/alignment_stats.txt",
+
 rule all_no_viz:
     """Run pipeline without visualization steps"""
     input:
