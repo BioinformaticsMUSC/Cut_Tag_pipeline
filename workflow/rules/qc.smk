@@ -15,7 +15,18 @@ rule fastqc:
     conda:
         "../envs/qc.yaml"
     shell:
-        "fastqc -t {threads} -o {params.outdir} {input}"
+        """
+        # Run FastQC
+        fastqc -t {threads} -o {params.outdir} {input}
+        
+        # Rename outputs to match expected pattern (remove _001 if present)
+        input_base=$(basename {input} {config[input][fastq_suffix]})
+        if [[ "{config[input][fastq_suffix]}" == "_001.fastq.gz" ]]; then
+            # Rename from sample_R1_001_fastqc.* to sample_R1_fastqc.*
+            mv {params.outdir}/${{input_base}}_001_fastqc.html {output.html} 2>/dev/null || true
+            mv {params.outdir}/${{input_base}}_001_fastqc.zip {output.zip} 2>/dev/null || true
+        fi
+        """
 
 rule fastqc_trimmed:
     """Run FastQC on trimmed reads"""
