@@ -6,7 +6,8 @@ rule trimmomatic:
     """Trim adapters and low-quality bases from paired-end reads"""
     input:
         r1=lambda wildcards: f"data/{wildcards.sample}_R1{config['input']['fastq_suffix']}",
-        r2=lambda wildcards: f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}"
+        r2=lambda wildcards: f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}",
+        adapters=config["trimmomatic"]["adapters"]
     output:
         r1="results/trimmed/{sample}_R1_trimmed.fastq.gz",
         r2="results/trimmed/{sample}_R2_trimmed.fastq.gz",
@@ -21,12 +22,15 @@ rule trimmomatic:
     conda:
         "../envs/trimming.yaml"
     shell:
-        "trimmomatic PE -threads {threads} "
-        "{input.r1} {input.r2} "
-        "{output.r1} {output.r1_unpaired} "
-        "{output.r2} {output.r2_unpaired} "
-        "ILLUMINACLIP:{params.trimmer} "
-        "{params.extra} 2> {log}"
+        """
+        mkdir -p results/trimmed results/logs/trimmomatic
+        trimmomatic PE -threads {threads} \
+            {input.r1} {input.r2} \
+            {output.r1} {output.r1_unpaired} \
+            {output.r2} {output.r2_unpaired} \
+            ILLUMINACLIP:{params.trimmer}:2:30:10 \
+            {params.extra} 2> {log}
+        """
 
 rule cutadapt:
     """Alternative adapter trimming with cutadapt"""
