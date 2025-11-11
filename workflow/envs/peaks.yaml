@@ -1,14 +1,15 @@
 name: peaks
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - macs2=2.2.7.1
-  - bedtools=2.30.0
-  - r-base=4.3.0
-  - bioconductor-chipseeker
-  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
-  - bioconductor-txdb.mmusculus.ucsc.mm10.knowngene
-  - bioconductor-org.hs.eg.db
-  - bioconductor-org.mm.eg.db
+  - python=3.10
+  - macs2=2.2.9
+  - bedtools=2.31.0
+  - r-base=4.3.1
+  - bioconductor-chipseeker=1.36.0
+  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene=3.17.0
+  - bioconductor-txdb.mmusculus.ucsc.mm10.knowngene=3.10.0
+  - bioconductor-org.hs.eg.db=3.17.0
+  - bioconductor-org.mm.eg.db=3.17.0
