@@ -43,12 +43,22 @@ rule fastqc_trimmed:
     shell:
         "fastqc -t {threads} -o {params.outdir} {input}"
 
+def get_multiqc_inputs():
+    """Get MultiQC inputs based on whether trimming is skipped"""
+    inputs = []
+    # Always include raw FastQC
+    inputs.extend(expand("results/fastqc/{sample}_R{read}_fastqc.zip", sample=SAMPLES, read=[1,2]))
+    # Add trimmed FastQC only if trimming is not skipped
+    if not config.get("processing", {}).get("skip_trimming", False):
+        inputs.extend(expand("results/fastqc_trimmed/{sample}_R{read}_trimmed_fastqc.zip", sample=SAMPLES, read=[1,2]))
+    # Always include BAM files
+    inputs.extend(expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES))
+    return inputs
+
 rule multiqc:
     """Generate MultiQC report"""
     input:
-        expand("results/fastqc/{sample}_R{read}_fastqc.zip", sample=SAMPLES, read=[1,2]),
-        expand("results/fastqc_trimmed/{sample}_R{read}_trimmed_fastqc.zip", sample=SAMPLES, read=[1,2]),
-        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES)
+        get_multiqc_inputs()
     output:
         "results/qc/multiqc_report.html"
     params:

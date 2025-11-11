@@ -23,6 +23,21 @@ SAMPLES = samples_df["sample_id"].tolist()
 wildcard_constraints:
     sample="[A-Za-z0-9_-]+"
 
+# Helper functions for conditional outputs
+def get_trimming_outputs():
+    """Get trimming outputs only if trimming is not skipped"""
+    if config.get("processing", {}).get("skip_trimming", False):
+        return []
+    else:
+        return expand("results/trimmed/{sample}_R{read}_trimmed.fastq.gz", sample=SAMPLES, read=[1,2])
+
+def get_fastqc_trimmed_outputs():
+    """Get FastQC trimmed outputs only if trimming is not skipped"""
+    if config.get("processing", {}).get("skip_trimming", False):
+        return []
+    else:
+        return expand("results/fastqc_trimmed/{sample}_R{read}_trimmed_fastqc.zip", sample=SAMPLES, read=[1,2])
+
 
 
 # Alternative target rules
@@ -45,12 +60,12 @@ rule all_no_trimming:
         "results/qc/alignment_stats.txt",
 
 rule all_no_viz:
-    """Run pipeline without visualization steps"""
+    """Run pipeline without visualization steps (respects trimming config)"""
     input:
         # FastQC reports
         expand("results/fastqc/{sample}_R{read}_fastqc.html", sample=SAMPLES, read=[1,2]),
-        # Trimmed reads
-        expand("results/trimmed/{sample}_R{read}_trimmed.fastq.gz", sample=SAMPLES, read=[1,2]),
+        # Trimmed reads (conditional)
+        get_trimming_outputs(),
         # Alignment
         expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
         expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
@@ -69,8 +84,8 @@ rule all:
     input:
         # FastQC reports
         expand("results/fastqc/{sample}_R{read}_fastqc.html", sample=SAMPLES, read=[1,2]),
-        # Trimmed reads
-        expand("results/trimmed/{sample}_R{read}_trimmed.fastq.gz", sample=SAMPLES, read=[1,2]),
+        # Trimmed reads (conditional)
+        get_trimming_outputs(),
         # Alignment
         expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
         expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
