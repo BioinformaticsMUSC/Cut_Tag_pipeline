@@ -57,7 +57,7 @@ rule sort_bam:
     input:
         "results/aligned/{sample}.bam"
     output:
-        "results/aligned/{sample}.sorted.bam"
+        "results/aligned/{sample}_sorted.bam"
     threads: 4
     conda:
         "../envs/alignment.yaml"
@@ -67,9 +67,9 @@ rule sort_bam:
 rule index_bam:
     """Index sorted BAM files"""
     input:
-        "results/aligned/{sample}.sorted.bam"
+        "results/aligned/{sample}_sorted.bam"
     output:
-        "results/aligned/{sample}.sorted.bam.bai"
+        "results/aligned/{sample}_sorted.bam.bai"
     conda:
         "../envs/alignment.yaml"
     shell:
@@ -78,7 +78,7 @@ rule index_bam:
 rule alignment_stats:
     """Generate alignment statistics"""
     input:
-        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES)
+        expand("results/aligned/{sample}_sorted.bam", sample=SAMPLES)
     output:
         "results/qc/alignment_stats.txt"
     conda:

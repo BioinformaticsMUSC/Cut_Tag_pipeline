@@ -19,6 +19,9 @@ configfile: "config/config.yaml"
 samples_df = pd.read_csv(config["samples"], sep="\t")
 SAMPLES = samples_df["sample_id"].tolist()
 
+# Get treatment samples (exclude controls)
+TREATMENT_SAMPLES = samples_df[~(samples_df['control'].isna() | (samples_df['control'] == 'NA'))]['sample_id'].tolist()
+
 # Define wildcards
 wildcard_constraints:
     sample="[A-Za-z0-9_-]+"
@@ -47,14 +50,14 @@ rule all_no_trimming:
         # FastQC reports
         expand("results/fastqc/{sample}_R{read}_fastqc.html", sample=SAMPLES, read=[1,2]),
         # Alignment (directly from raw reads)
-        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
-        expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam.bai", sample=SAMPLES),
         # Filtered BAMs
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
-        # Peak calling
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=SAMPLES),
-        expand("results/peaks/seacr/{sample}.stringent.bed", sample=SAMPLES),
+        # Peak calling (treatment samples only)
+        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
         "results/qc/alignment_stats.txt",
@@ -67,14 +70,14 @@ rule all_no_viz:
         # Trimmed reads (conditional)
         get_trimming_outputs(),
         # Alignment
-        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
-        expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam.bai", sample=SAMPLES),
         # Filtered BAMs
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
-        # Peak calling
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=SAMPLES),
-        expand("results/peaks/seacr/{sample}.stringent.bed", sample=SAMPLES),
+        # Peak calling (treatment samples only)
+        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
         "results/qc/alignment_stats.txt",
@@ -87,19 +90,19 @@ rule all:
         # Trimmed reads (conditional)
         get_trimming_outputs(),
         # Alignment
-        expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES),
-        expand("results/aligned/{sample}.sorted.bam.bai", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam", sample=SAMPLES),
+        expand("results/aligned/{sample}_sorted.bam.bai", sample=SAMPLES),
         # Filtered BAMs
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
-        # Peak calling
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=SAMPLES),
-        expand("results/peaks/seacr/{sample}.stringent.bed", sample=SAMPLES),
+        # Peak calling (treatment samples only)
+        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
         "results/qc/alignment_stats.txt",
         # Visualization (disabled - uncomment to enable)
-        # expand("results/bigwig/{sample}.bw", sample=SAMPLES),
+        # expand("results/bigwig/{sample}.bw", sample=TREATMENT_SAMPLES),
 
 # Include rule modules
 include: "rules/qc.smk"

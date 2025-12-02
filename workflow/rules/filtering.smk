@@ -5,8 +5,8 @@ BAM Filtering Rules
 rule filter_bam:
     """Filter BAM files for high-quality reads"""
     input:
-        bam="results/aligned/{sample}.sorted.bam",
-        bai="results/aligned/{sample}.sorted.bam.bai"
+        bam="results/aligned/{sample}_sorted.bam",
+        bai="results/aligned/{sample}_sorted.bam.bai"
     output:
         "results/filtered/{sample}.filtered.bam"
     params:
@@ -51,6 +51,7 @@ rule filter_fragments:
         "awk 'BEGIN{{OFS=\"\\t\"}} "
         "$1~/^@/ || ($9>0 && $9<{params.max_size}) || ($9<0 && $9>-{params.max_size})' | "
         "samtools view -b - > {output}"
+
 
 rule index_filtered_bam:
     """Index filtered BAM files"""

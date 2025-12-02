@@ -52,8 +52,15 @@ def get_multiqc_inputs():
     if not config.get("processing", {}).get("skip_trimming", False):
         inputs.extend(expand("results/fastqc_trimmed/{sample}_R{read}_trimmed_fastqc.zip", sample=SAMPLES, read=[1,2]))
     # Always include BAM files
-    inputs.extend(expand("results/aligned/{sample}.sorted.bam", sample=SAMPLES))
+    inputs.extend(expand("results/aligned/{sample}_sorted.bam", sample=SAMPLES))
     return inputs
+
+def get_multiqc_dirs():
+    """Get MultiQC directories based on whether trimming is skipped"""
+    dirs = ["results/fastqc", "results/aligned"]
+    if not config.get("processing", {}).get("skip_trimming", False):
+        dirs.append("results/fastqc_trimmed")
+    return " ".join(dirs)
 
 rule multiqc:
     """Generate MultiQC report"""
@@ -63,9 +70,9 @@ rule multiqc:
         "results/qc/multiqc_report.html"
     params:
         outdir="results/qc",
-        title="CUT&Tag Analysis Report"
+        title="CUT&Tag Analysis Report",
+        multiqc_dirs=get_multiqc_dirs()
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc -o {params.outdir} -n multiqc_report.html "
-        "-i '{params.title}' results/fastqc results/fastqc_trimmed results/aligned"
+        "multiqc -o {params.outdir} -n multiqc_report.html -i '{params.title}' {params.multiqc_dirs}"

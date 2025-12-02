@@ -44,7 +44,7 @@ filtering:
 
 # Peak calling parameters
 macs2:
-  extra_params: "--keep-dup all --broad-cutoff 0.1 --min-length 500 --max-gap 200"
+  extra_params: "--keep-dup all --max-gap 200"
   
 seacr:
   threshold: 0.01  # FDR threshold for peak calling

@@ -1,0 +1,13 @@
+name: peaks_minimal
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - macs2
+  - bedtools
+  - pip
+  - pip:
+    - numpy
+    - pandas
