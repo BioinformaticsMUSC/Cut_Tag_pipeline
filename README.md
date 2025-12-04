@@ -1,6 +1,6 @@
 # CUT&Tag Analysis Pipeline
 
-A comprehensive Snakemake pipeline for CUT&Tag (Cleavage Under Targets and Tagmentation) data analysis.
+Snakemake pipeline for CUT&Tag (Cleavage Under Targets and Tagmentation) data analysis.
 
 ## Overview
 
