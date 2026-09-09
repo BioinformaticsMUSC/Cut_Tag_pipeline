@@ -22,6 +22,13 @@ SAMPLES = samples_df["sample_id"].tolist()
 # Get treatment samples (exclude controls)
 TREATMENT_SAMPLES = samples_df[~(samples_df['control'].isna() | (samples_df['control'] == 'NA'))]['sample_id'].tolist()
 
+def get_raw_fastq(wildcards, read=None):
+    """Build a raw FASTQ path from the configured full filename pattern."""
+    pattern = config["input"]["fastq_pattern"]
+    if read is None:
+        read = wildcards.read
+    return f"data/{pattern.format(sample=wildcards.sample, read=read)}"
+
 # Define wildcards
 wildcard_constraints:
     sample="[A-Za-z0-9_-]+"
@@ -58,6 +65,8 @@ rule all_no_trimming:
         # Peak calling (treatment samples only)
         expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
         expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
+        # BigWig tracks
+        expand("results/bigwig/{sample}.bw", sample=SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
         "results/qc/alignment_stats.txt",
@@ -98,11 +107,11 @@ rule all:
         # Peak calling (treatment samples only)
         expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
         expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
+        # BigWig tracks
+        expand("results/bigwig/{sample}.bw", sample=SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
         "results/qc/alignment_stats.txt",
-        # Visualization (disabled - uncomment to enable)
-        # expand("results/bigwig/{sample}.bw", sample=TREATMENT_SAMPLES),
 
 # Include rule modules
 include: "rules/qc.smk"
@@ -110,4 +119,4 @@ include: "rules/trimming.smk"
 include: "rules/alignment.smk"
 include: "rules/filtering.smk"
 include: "rules/peaks.smk"
-# include: "rules/visualization.smk"  # Disabled - uncomment to enable
+include: "rules/visualization.smk"

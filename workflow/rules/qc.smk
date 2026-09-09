@@ -5,7 +5,7 @@ Quality Control Rules
 rule fastqc:
     """Run FastQC on raw reads"""
     input:
-        lambda wildcards: f"data/{wildcards.sample}_R{wildcards.read}{config['input']['fastq_suffix']}"
+        get_raw_fastq
     output:
         html="results/fastqc/{sample}_R{read}_fastqc.html",
         zip="results/fastqc/{sample}_R{read}_fastqc.zip"
@@ -19,13 +19,10 @@ rule fastqc:
         # Run FastQC
         fastqc -t {threads} -o {params.outdir} {input}
         
-        # Rename outputs to match expected pattern (remove _001 if present)
-        input_base=$(basename {input} {config[input][fastq_suffix]})
-        if [[ "{config[input][fastq_suffix]}" == "_001.fastq.gz" ]]; then
-            # Rename from sample_R1_001_fastqc.* to sample_R1_fastqc.*
-            mv {params.outdir}/${{input_base}}_001_fastqc.html {output.html} 2>/dev/null || true
-            mv {params.outdir}/${{input_base}}_001_fastqc.zip {output.zip} 2>/dev/null || true
-        fi
+        # Rename FastQC outputs from the actual input basename.
+        input_base=$(basename {input} .fastq.gz)
+        mv {params.outdir}/$input_base'_fastqc.html' {output.html}
+        mv {params.outdir}/$input_base'_fastqc.zip' {output.zip}
         """
 
 rule fastqc_trimmed:

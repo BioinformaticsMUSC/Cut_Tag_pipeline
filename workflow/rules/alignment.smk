@@ -21,14 +21,14 @@ rule bowtie2_build:
 def get_alignment_input_r1(wildcards):
     """Get R1 input file based on whether trimming is skipped"""
     if config.get("processing", {}).get("skip_trimming", False):
-        return f"data/{wildcards.sample}_R1{config['input']['fastq_suffix']}"
+        return get_raw_fastq(wildcards, read=1)
     else:
         return f"results/trimmed/{wildcards.sample}_R1_trimmed.fastq.gz"
 
 def get_alignment_input_r2(wildcards):
     """Get R2 input file based on whether trimming is skipped"""
     if config.get("processing", {}).get("skip_trimming", False):
-        return f"data/{wildcards.sample}_R2{config['input']['fastq_suffix']}"
+        return get_raw_fastq(wildcards, read=2)
     else:
         return f"results/trimmed/{wildcards.sample}_R2_trimmed.fastq.gz"
 

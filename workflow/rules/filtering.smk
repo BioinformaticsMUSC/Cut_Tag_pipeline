@@ -19,13 +19,16 @@ rule filter_bam:
         "samtools view -@ {threads} -b -q {params.quality} {params.flags} "
         "{input.bam} > {output}"
 
-rule remove_duplicates:
-    """Remove PCR duplicates using Picard"""
+rule mark_duplicates:
+    """Mark (and optionally remove) PCR duplicates using Picard MarkDuplicates"""
     input:
         "results/filtered/{sample}.filtered.bam"
     output:
         bam="results/filtered/{sample}.dedup.bam",
         metrics="results/qc/picard/{sample}.dedup_metrics.txt"
+    params:
+        # controlled via config["filtering"]["remove_duplicates"], default is to keep duplicates flagged
+        remove_dup=str(config.get("filtering", {}).get("remove_duplicates", False)).lower()
     conda:
         "../envs/alignment.yaml"
     shell:
@@ -33,8 +36,19 @@ rule remove_duplicates:
         "INPUT={input} "
         "OUTPUT={output.bam} "
         "METRICS_FILE={output.metrics} "
-        "REMOVE_DUPLICATES=true "
+        "REMOVE_DUPLICATES={params.remove_dup} "
         "VALIDATION_STRINGENCY=LENIENT"
+
+rule index_dedup_bam:
+    """Index the marked-duplicates BAM file"""
+    input:
+        "results/filtered/{sample}.dedup.bam"
+    output:
+        "results/filtered/{sample}.dedup.bam.bai"
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "samtools index {input}"
 
 rule filter_fragments:
     """Filter fragments by size (keep nucleosome-free reads < 120bp)"""

@@ -5,11 +5,8 @@ samples: "config/samples.tsv"
 
 # Input file configuration
 input:
-  # FASTQ file suffix pattern - adjust based on your sequencing facility
-  # Common patterns: "_001.fastq.gz", ".fastq.gz", "_R{read}_001.fastq.gz"
-  fastq_suffix: "_001.fastq.gz"
-  # Alternative: use full pattern
-  # fastq_pattern: "{sample}_R{read}_001.fastq.gz"
+  # Full FASTQ filename pattern relative to data/
+  fastq_pattern: "{sample}_R{read}_001.fastq.gz"
 
 # Processing options
 processing:
@@ -41,6 +38,7 @@ filtering:
   min_quality: 30
   sam_flags: "-F 1804"  # Remove unmapped, mate unmapped, not primary alignment, reads failing platform
   max_fragment_size: 120  # For nucleosome-free reads
+  remove_duplicates: false  # If true, Picard MarkDuplicates removes duplicates instead of just flagging them
 
 # Peak calling parameters
 macs2:
