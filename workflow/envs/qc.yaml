@@ -7,4 +7,4 @@ dependencies:
   - fastqc=0.12.1
   - multiqc=1.14
   - samtools=1.17
-  - setuptools
+  - setuptools<=80.10.2
