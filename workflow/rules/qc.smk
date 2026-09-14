@@ -19,10 +19,14 @@ rule fastqc:
         # Run FastQC
         fastqc -t {threads} -o {params.outdir} {input}
         
-        # Rename FastQC outputs from the actual input basename.
+        # Rename FastQC outputs from the actual input basename if different
         input_base=$(basename {input} .fastq.gz)
-        mv {params.outdir}/$input_base'_fastqc.html' {output.html}
-        mv {params.outdir}/$input_base'_fastqc.zip' {output.zip}
+        if [ "{params.outdir}/${{input_base}}_fastqc.html" != "{output.html}" ]; then
+            mv "{params.outdir}/${{input_base}}_fastqc.html" "{output.html}"
+        fi
+        if [ "{params.outdir}/${{input_base}}_fastqc.zip" != "{output.zip}" ]; then
+            mv "{params.outdir}/${{input_base}}_fastqc.zip" "{output.zip}"
+        fi
         """
 
 rule fastqc_trimmed:
