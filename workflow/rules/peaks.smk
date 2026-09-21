@@ -5,7 +5,10 @@ Peak Calling Rules
 def get_control_bam(wildcards):
     """Get control BAM file for a sample if it exists"""
     import csv
-    
+
+    if not USE_CONTROL:
+        return []
+
     with open(config["samples"], 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
@@ -21,7 +24,10 @@ def get_control_bam(wildcards):
 def is_control_sample(sample_id):
     """Check if a sample is a control (has NA in control column)"""
     import csv
-    
+
+    if not USE_CONTROL:
+        return False
+
     with open(config["samples"], 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
@@ -33,6 +39,10 @@ def is_control_sample(sample_id):
 def get_treatment_samples():
     """Get list of samples that are not controls"""
     import csv
+
+    if not USE_CONTROL:
+        return list(SAMPLES)
+
     treatment_samples = []
     
     with open(config["samples"], 'r') as f:
@@ -46,43 +56,55 @@ def get_treatment_samples():
     return treatment_samples
 
 rule macs2_callpeak:
-    """Call peaks using MACS2 (skip control samples)"""
+    """Call peaks using MACS2 (skip control/IgG samples themselves when use_control is enabled)"""
     input:
         treatment="results/filtered/{sample}.filtered.bam",
         control=get_control_bam
     output:
-        narrowpeak="results/peaks/macs2/{sample}_peaks.narrowPeak",
+        peakfile=f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}",
         summits="results/peaks/macs2/{sample}_summits.bed",
-        #broadpeak="results/peaks/macs2/{sample}_peaks.broadPeak",
         xls="results/peaks/macs2/{sample}_peaks.xls"
     params:
         name="{sample}",
         outdir="results/peaks/macs2",
         genome_size=config["genome"]["effective_size"],
         extra=config["macs2"]["extra_params"],
-        samples_file=config["samples"]
+        samples_file=config["samples"],
+        use_control=str(USE_CONTROL).lower(),
+        broad_flag="--broad" if PEAK_TYPE == "broad" else "",
+        peak_type=PEAK_TYPE
     log:
         "results/logs/macs2/{sample}.log"
     conda:
         "../envs/peaks.yaml"
     shell:
         """
-        # Check if this is a control sample using awk/grep
+        mkdir -p {params.outdir}
+
+        # Check if this is a control/IgG sample using awk/grep
         # Look for the sample in the TSV file and check if control column is NA
         CONTROL_VALUE=$(awk -F'\t' -v sample="{wildcards.sample}" '$1 == sample {{print $4}}' {params.samples_file} | head -1)
-        
-        if [ "$CONTROL_VALUE" = "NA" ] || [ -z "$CONTROL_VALUE" ]; then
+
+        if [ "{params.use_control}" = "false" ]; then
+            # No IgG controls in this experiment: call peaks for every sample, no control subtraction
+            macs2 callpeak -t {input.treatment} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} {params.broad_flag} {params.extra} > {log} 2>&1
+            if [ "{params.peak_type}" = "broad" ]; then
+                touch {output.summits}
+            fi
+        elif [ "$CONTROL_VALUE" = "NA" ] || [ -z "$CONTROL_VALUE" ]; then
             # Create empty output files for control samples
-            mkdir -p {params.outdir}
-            touch {output.narrowpeak} {output.summits} {output.xls}
+            touch {output.peakfile} {output.summits} {output.xls}
             echo "Skipped peak calling for control sample {wildcards.sample}" > {log}
             echo "Skipped peak calling for control sample {wildcards.sample}"
         else
             # Run peak calling for treatment samples
             if [ -n "{input.control}" ]; then
-                macs2 callpeak -t {input.treatment} -c {input.control} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} {params.extra} > {log} 2>&1
+                macs2 callpeak -t {input.treatment} -c {input.control} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} {params.broad_flag} {params.extra} > {log} 2>&1
             else
-                macs2 callpeak -t {input.treatment} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} {params.extra} > {log} 2>&1
+                macs2 callpeak -t {input.treatment} -f BAMPE -g {params.genome_size} -n {params.name} --outdir {params.outdir} {params.broad_flag} {params.extra} > {log} 2>&1
+            fi
+            if [ "{params.peak_type}" = "broad" ]; then
+                touch {output.summits}
             fi
         fi
         """
@@ -90,7 +112,10 @@ rule macs2_callpeak:
 def get_control_bedgraph(wildcards):
     """Get control bedgraph file for a sample if it exists"""
     import csv
-    
+
+    if not USE_CONTROL:
+        return []
+
     with open(config["samples"], 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
@@ -114,7 +139,8 @@ rule seacr_callpeak:
     params:
         prefix="results/peaks/seacr/{sample}",
         threshold=config["seacr"]["threshold"],
-        samples_file=config["samples"]
+        samples_file=config["samples"],
+        use_control=USE_CONTROL
     conda:
         "../envs/peaks.yaml"
     script:
@@ -149,7 +175,7 @@ rule bam_to_bedgraph:
 rule peak_summary:
     """Generate simple peak summary statistics (treatment samples only)"""
     input:
-        lambda wildcards: expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=get_treatment_samples())
+        lambda wildcards: expand(f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}", sample=get_treatment_samples())
     output:
         "results/peaks/peak_summary.txt"
     conda:
@@ -160,7 +186,7 @@ rule peak_summary:
 rule peak_consensus:
     """Generate consensus peaks across treatment samples"""
     input:
-        lambda wildcards: expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=get_treatment_samples())
+        lambda wildcards: expand(f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}", sample=get_treatment_samples())
     output:
         "results/peaks/consensus_peaks.bed"
     conda:

@@ -19,8 +19,16 @@ configfile: "config/config.yaml"
 samples_df = pd.read_csv(config["samples"], sep="\t")
 SAMPLES = samples_df["sample_id"].tolist()
 
-# Get treatment samples (exclude controls)
-TREATMENT_SAMPLES = samples_df[~(samples_df['control'].isna() | (samples_df['control'] == 'NA'))]['sample_id'].tolist()
+# Peak calling configuration
+USE_CONTROL = config.get("processing", {}).get("use_control", True)
+PEAK_TYPE = config.get("macs2", {}).get("peak_type", "narrow")
+PEAK_EXT = "broadPeak" if PEAK_TYPE == "broad" else "narrowPeak"
+
+# Get treatment samples (exclude controls, unless use_control is disabled)
+if USE_CONTROL:
+    TREATMENT_SAMPLES = samples_df[~(samples_df['control'].isna() | (samples_df['control'] == 'NA'))]['sample_id'].tolist()
+else:
+    TREATMENT_SAMPLES = SAMPLES
 
 def get_raw_fastq(wildcards, read=None):
     """Build a raw FASTQ path from the configured full filename pattern."""
@@ -63,7 +71,7 @@ rule all_no_trimming:
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
         # Peak calling (treatment samples only)
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand(f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}", sample=TREATMENT_SAMPLES),
         expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # BigWig tracks
         expand("results/bigwig/{sample}.bw", sample=SAMPLES),
@@ -85,7 +93,7 @@ rule all_no_viz:
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
         # Peak calling (treatment samples only)
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand(f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}", sample=TREATMENT_SAMPLES),
         expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # QC reports
         "results/qc/multiqc_report.html",
@@ -105,7 +113,7 @@ rule all:
         expand("results/filtered/{sample}.filtered.bam", sample=SAMPLES),
         expand("results/filtered/{sample}.filtered.bam.bai", sample=SAMPLES),
         # Peak calling (treatment samples only)
-        expand("results/peaks/macs2/{sample}_peaks.narrowPeak", sample=TREATMENT_SAMPLES),
+        expand(f"results/peaks/macs2/{{sample}}_peaks.{PEAK_EXT}", sample=TREATMENT_SAMPLES),
         expand("results/peaks/seacr/{sample}.stringent.bed", sample=TREATMENT_SAMPLES),
         # BigWig tracks
         expand("results/bigwig/{sample}.bw", sample=SAMPLES),

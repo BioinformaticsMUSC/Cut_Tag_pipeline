@@ -8,8 +8,10 @@ import sys
 import csv
 from pathlib import Path
 
-def is_control_sample(sample_id, samples_file):
+def is_control_sample(sample_id, samples_file, use_control=True):
     """Check if a sample is a control (has NA in control column)"""
+    if not use_control:
+        return False
     with open(samples_file, 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
@@ -79,8 +81,9 @@ if __name__ == "__main__":
     
     # Check if this is a control sample
     samples_file = snakemake.params.samples_file
-    
-    if is_control_sample(sample_id, samples_file):
+    use_control = getattr(snakemake.params, "use_control", True)
+
+    if is_control_sample(sample_id, samples_file, use_control):
         # Create empty output files for control samples
         print(f"Skipping SEACR peak calling for control sample {sample_id}")
         Path(snakemake.output.stringent).touch()

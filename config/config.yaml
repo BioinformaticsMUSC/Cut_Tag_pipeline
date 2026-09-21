@@ -12,6 +12,9 @@ input:
 processing:
   # Skip trimming step (CUT&Tag data is often high quality and doesn't need trimming)
   skip_trimming: false  # Set to true to align raw reads directly
+  # Set to false if you have no IgG/control samples; peaks will be called for every
+  # sample without control subtraction (the samples.tsv 'control' column is ignored)
+  use_control: true
 
 # Reference genome configuration
 genome:
@@ -43,6 +46,7 @@ filtering:
 # Peak calling parameters
 macs2:
   extra_params: "--keep-dup all --max-gap 200"
+  peak_type: "narrow"  # "narrow" or "broad" (adds --broad and outputs a broadPeak file)
   
 seacr:
   threshold: 0.01  # FDR threshold for peak calling
